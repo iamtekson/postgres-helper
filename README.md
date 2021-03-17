@@ -12,7 +12,7 @@ pip install postgres-helper
 
 ### Examples using this library
 
-Please check the official documentation for full documentation.
+Please check the official documentation here: [https://postgres-helper.readthedocs.io/](https://postgres-helper.readthedocs.io/).
 
 ```python
 #Library import
