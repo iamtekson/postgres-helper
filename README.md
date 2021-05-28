@@ -2,6 +2,8 @@
 
 The `postgres-helper` library is build on top of [`psycopg2`](https://github.com/psycopg/psycopg2/). It will be really helpful for running the basic postgresql query in python.
 
+Checkout the official documentation of this library here: [postgres-helper.readthedocs.io/](https://postgres-helper.readthedocs.io/)
+
 ### Installation
 
 For installation of `postgres-helper`, you need to run following command
