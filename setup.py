@@ -5,16 +5,17 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="postgres-helper",
-    version="0.0.1",
+    version="0.0.2",
     author="Tek Kshetri",
     author_email="iamtekson@gmail.com",
     description="Package for Postgres query on python",
-    py_modules=['postgres-helper'],
+    py_modules=['pg'],
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/iamtekson/postgres-helper",
     packages=['pg'],
-    keywords=['postgresql', 'postgres', 'database', 'sql', 'api', 'table', 'pg', 'postGIS'],
+    keywords=['postgresql', 'postgres', 'database',
+              'sql', 'api', 'table', 'pg', 'postGIS'],
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",

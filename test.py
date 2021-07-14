@@ -1,5 +1,7 @@
 from pg.pg import Pg
-pg = Db(dbname='postgres', user='postgres', password='admin', host='localhost', port='5432')
+pg = Pg(dbname='sdss', user='postgres',
+        password='gicait123', host='localhost', port='5432')
 
-#create schema
-pg.create_schema('name', db'sdss')
+# create schema
+pg.get_all_values('auth_user', "public")
+print(pg.get_columns_names('auth_user'))
