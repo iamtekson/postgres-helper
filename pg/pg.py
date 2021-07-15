@@ -1,6 +1,24 @@
 from psycopg2 import sql, connect
+from psycopg2.extras import RealDictCursor
+from bson import json_util
+import json
+
 
 class Pg:
+    """
+    Attributes
+    ----------
+    dbname : str, optional
+        The name of the postgresql database.
+    user : str
+        Login name for session.
+    password: str
+        Password for session.
+    host : str
+        hostname of postgresql database
+    port : int
+    """
+
     def __init__(self, dbname=None, user='postgres', password='admin', host='localhost', port=5432):
         self.dbname = dbname
         self.user = user
@@ -47,6 +65,27 @@ class Pg:
 
         return columns
 
+    def get_numeric_column_names(self, table: str):
+        columns = list()
+        with self.conn.cursor() as col_cursor:
+            col_names_str = """
+                            SELECT col.column_name FROM INFORMATION_SCHEMA.COLUMNS as col 
+                            WHERE table_name = '{}' 
+                                AND col.data_type in ('smallint', 'integer', 'bigint', 'decimal', 'numeric', 'real', 'double precision', 'smallserial', 'serial', 'bigserial', 'money');
+                            """.format(table)
+
+            sql_object = sql.SQL(col_names_str).format(sql.Identifier(table))
+            try:
+                col_cursor.execute(sql_object)
+                col_names = col_cursor.fetchall()
+                for tup in col_names:
+                    columns += [tup[0]]
+
+            except Exception as err:
+                print("get_numeric_column_names ERROR:", err)
+
+        return columns
+
     # get all the values from specific column
     def get_values_from_column(self, column, table, schema, distinct=True):
         values = []
@@ -85,7 +124,7 @@ class Pg:
             return ('Schema create successfully')
 
     # create new column in table
-    def create_column(self, column, table,  col_datatype='varchar', schema='public',):
+    def create_column(self, column, table, schema='public',  col_datatype='varchar'):
 
         with self.conn.cursor() as cursor:
             sql = '''ALTER TABLE "{3}"."{0}" ADD IF NOT EXISTS "{1}" {2}'''.format(
@@ -100,10 +139,31 @@ class Pg:
             sql = '''
                 UPDATE "{0}"."{1}" SET "{2}"='{3}' WHERE "{4}"='{5}'
                 '''.format(
-                schema, table, column, value, where_col, where_val)
+                schema, table, column, value, where_column, where_value)
             self.execute_sql(cursor, sql)
             self.conn.commit()
             return ('update table successful')
+
+    # run own sql
+    def run_sql(self, sql):
+        with self.conn.cursor() as cursor:
+            self.execute_sql(cursor, sql)
+            self.conn.commit()
+            return ('Your sql run successfully')
+
+    def get_all_values(self, table, schema, where_col=None, where_val=None):
+        with self.conn.cursor(cursor_factory=RealDictCursor) as cursor:
+            if where_col:
+                sql = '''SELECT * FROM "{}"."{}" WHERE "{}"='{}';'''.format(
+                    schema, table, where_col, where_val)
+
+            else:
+                sql = '''SELECT * FROM "{}"."{}";'''.format(
+                    schema, table)
+
+            cursor.execute(sql)
+            rows = cursor.fetchall()
+            return json.dumps(rows, default=json_util.default)
 
     # delete table
     def delete_table(self, name, schema):
