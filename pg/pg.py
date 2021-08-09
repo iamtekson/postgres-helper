@@ -182,3 +182,14 @@ class Pg:
             self.execute_sql(cursor, sql)
             self.conn.commit()
             return ('Values dropped successfully.')
+
+    # Get all the table names
+
+    def get_table_names(self, schema):
+        with self.conn.cursor() as cursor:
+            sql = '''SELECT table_name FROM information_schema.tables WHERE table_schema="{0}"'''.format(
+                schema)
+
+            cursor.execute(sql)
+            rows = cursor.fetchall()
+            return json.dumps(rows, default=json_util.default)
