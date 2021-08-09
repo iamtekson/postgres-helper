@@ -186,10 +186,19 @@ class Pg:
     # Get all the table names
 
     def get_table_names(self, schema):
+        values = []
         with self.conn.cursor() as cursor:
-            sql = '''SELECT table_name FROM information_schema.tables WHERE table_schema="{0}"'''.format(
+            sql = """SELECT table_name FROM information_schema.tables WHERE table_schema='{0}'""".format(
                 schema)
 
-            cursor.execute(sql)
-            rows = cursor.fetchall()
-            return json.dumps(rows, default=json_util.default)
+            try:
+                cursor.execute(sql)
+                rows = cursor.fetchall()
+
+                for tup in rows:
+                    values += [tup[0]]
+
+            except Exception as e:
+                return('get_trable_names error: ', e)
+
+        return values
