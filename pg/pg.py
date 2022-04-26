@@ -185,6 +185,7 @@ class Pg:
             self.conn.rollback()
             return ("run_sql ERROR:", e)
 
+    # get all values
     def get_all_values(self, table, schema, where_col=None, where_val=None):
         try:
             with self.conn.cursor(cursor_factory=RealDictCursor) as cursor:
@@ -230,7 +231,6 @@ class Pg:
             return ("delete_values ERROR:", e)
 
     # Get all the table names
-
     def get_table_names(self, schema):
         values = []
         try:
@@ -252,3 +252,20 @@ class Pg:
             self.conn.rollback()
             return ("get_table_names ERROR:", e)
         return values
+
+    # get vuln connection
+    def get_vuln_connection(self, schema, table, column1, column2):
+        try:
+            with self.conn.cursor(cursor_factory=RealDictCursor) as cursor:
+                sql = '''SELECT DISTINCT "{}", "{}" FROM "{}"."{}";'''.format(
+                    column1, column2, schema, table)
+
+                print(sql, 'sql')
+                cursor.execute(sql)
+                rows = cursor.fetchall()
+                data = json.dumps(rows, default=json_util.default)
+                return data
+
+        except Exception as e:
+            self.conn.rollback()
+            return ("get_all_values ERROR:", e)
