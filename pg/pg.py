@@ -35,8 +35,9 @@ class Pg:
             )
 
         except Exception as err:
-            return ("psycopg2 connect() ERROR:", err)
             self.conn = None
+            assert "psycopg2 connect() ERROR:", err
+            
 
     # Execute sql query
     def execute_sql(self, cursor, sql):
