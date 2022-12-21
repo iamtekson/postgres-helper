@@ -43,7 +43,6 @@ class Pg:
     def execute_sql(self, cursor, sql):
         try:
             cursor.execute(sql)
-
         except Exception as err:
             return ('ERROR: ', err)
 
@@ -56,25 +55,19 @@ class Pg:
                 col_names_str += "table_name = '{}';".format(table)
                 sql_object = sql.SQL(col_names_str).format(
                     sql.Identifier(table))
-                # try:
                 col_cursor.execute(sql_object)
                 col_names = (col_cursor.fetchall())
                 for tup in col_names:
                     columns += [tup[0]]
                 self.conn.commit()
                 self.conn.close()
-                
-                # except Exception as err:
-                #     self.conn.rollback()
-                #     return ("get_columns_names ERROR:", err)
-
+                return columns
         except Exception as e:
             self.conn.rollback()
             self.conn.close()
             
             return ("get_columns_names ERROR:", e)
 
-        return columns
 
     def get_numeric_column_names(self, table: str):
         columns = list()
@@ -88,21 +81,17 @@ class Pg:
 
                 sql_object = sql.SQL(col_names_str).format(
                     sql.Identifier(table))
-                # try:
                 col_cursor.execute(sql_object)
                 col_names = col_cursor.fetchall()
                 for tup in col_names:
                     columns += [tup[0]]
-                self.conn.commit()
-                # except Exception as err:
-                #     self.conn.rollback()
-                #     return ("get_numeric_column_names ERROR:", err)
-
+                self.conn.close()
+                return columns
         except Exception as e:
             self.conn.rollback()
+            self.conn.close()
             return ("get_numeric_column_names ERROR:", e)
 
-        return columns
 
     # get all the values from specific column
     def get_values_from_column(self, column, table, schema, distinct=True):
@@ -119,38 +108,32 @@ class Pg:
                 sql_object = sql.SQL(all_values_str).format(
                     sql.Identifier(column), sql.Identifier(table))
 
-                # try:
                 col_cursor.execute(sql_object, (column))
                 values_name = (col_cursor.fetchall())
                 for tup in values_name:
                     values += [tup[0]]
-                self.conn.commit()
-                        
-
-                # except Exception as err:
-                #     self.conn.rollback()
-                #     return ("get_values_from_column ERROR:", err)
-
+                self.conn.close()
+                return values
         except Exception as e:
             self.conn.rollback()
+            self.conn.close()
             return ("get_numeric_column_names ERROR:", e)
-
-        return values
 
     # create the schema based on the given name
     def create_schema(self, name):
         n = name.split(' ')
         if len(n) > 0:
             name = name.replace(' ', '_')
-
         try:
             with self.conn.cursor() as cursor:
                 sql = f'''CREATE SCHEMA IF NOT EXISTS {name}'''
                 self.execute_sql(cursor, sql)
                 self.conn.commit()
+                self.conn.close()
                 return ('Schema create successfully')
         except Exception as e:
             self.conn.rollback()
+            self.conn.close()
             return ("create_schema ERROR:", e)
 
     # create new column in table
@@ -162,7 +145,6 @@ class Pg:
                 self.execute_sql(cursor, sql)
                 self.conn.commit()
                 self.conn.close()
-                
                 return ('create column successful')
         except Exception as e:
             self.conn.rollback()
@@ -179,9 +161,11 @@ class Pg:
                     schema, table, column, value, where_column, where_value)
                 self.execute_sql(cursor, sql)
                 self.conn.commit()
+                self.conn.close()
                 return ('update table successful')
         except Exception as e:
             self.conn.rollback()
+            self.conn.close()
             return ("update_column ERROR:", e)
 
     # run own sql
@@ -190,9 +174,11 @@ class Pg:
             with self.conn.cursor() as cursor:
                 self.execute_sql(cursor, sql)
                 self.conn.commit()
+                self.conn.close()
                 return ('Your sql run successfully')
         except Exception as e:
             self.conn.rollback()
+            self.conn.close()
             return ("run_sql ERROR:", e)
 
     # get all values
@@ -202,16 +188,17 @@ class Pg:
                 if where_col:
                     sql = '''SELECT * FROM "{}"."{}" WHERE "{}"='{}';'''.format(
                         schema, table, where_col, where_val)
-
                 else:
                     sql = '''SELECT * FROM "{}"."{}";'''.format(
                         schema, table)
 
                 cursor.execute(sql)
                 rows = cursor.fetchall()
+                self.conn.close()
                 return json.dumps(rows, default=json_util.default)
         except Exception as e:
             self.conn.rollback()
+            self.conn.close()
             return ("get_all_values ERROR:", e)
 
     # delete table
@@ -222,9 +209,11 @@ class Pg:
                     schema, name)
                 self.execute_sql(cursor, sql)
                 self.conn.commit()
+                self.conn.close()
                 return ('{} table dropped successfully.'.format(name))
         except Exception as e:
             self.conn.rollback()
+            self.conn.close()
             return ("delete_table ERROR:", e)
 
     # Delete values
@@ -235,9 +224,11 @@ class Pg:
                     schema, table_name, condition)
                 self.execute_sql(cursor, sql)
                 self.conn.commit()
+                self.conn.close()
                 return ('Values dropped successfully.')
         except Exception as e:
             self.conn.rollback()
+            self.conn.close()
             return ("delete_values ERROR:", e)
 
     # Get all the table names
@@ -247,21 +238,16 @@ class Pg:
             with self.conn.cursor() as cursor:
                 sql = """SELECT table_name FROM information_schema.tables WHERE table_schema='{0}'""".format(
                     schema)
-
-                try:
-                    cursor.execute(sql)
-                    rows = cursor.fetchall()
-
-                    for tup in rows:
-                        values += [tup[0]]
-
-                except Exception as e:
-                    self.conn.rollback()
-                    return('get_trable_names error: ', e)
+                cursor.execute(sql)
+                rows = cursor.fetchall()
+                for tup in rows:
+                    values += [tup[0]]
+                self.conn.close()
+                return values
         except Exception as e:
             self.conn.rollback()
+            self.conn.close()
             return ("get_table_names ERROR:", e)
-        return values
 
     # get vuln connection
     def get_vuln_connection(self, schema, table, column1, column2):
@@ -269,15 +255,11 @@ class Pg:
             with self.conn.cursor(cursor_factory=RealDictCursor) as cursor:
                 sql = '''SELECT DISTINCT "{}", "{}" FROM "{}"."{}";'''.format(
                     column1, column2, schema, table)
-
-                print(sql, 'sql')
                 cursor.execute(sql)
                 rows = cursor.fetchall()
                 data = json.dumps(rows, default=json_util.default)
-                self.conn.commit()
                 self.conn.close()
                 return data
-
         except Exception as e:
             self.conn.rollback()
             self.conn.close()
