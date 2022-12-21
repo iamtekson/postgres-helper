@@ -59,10 +59,11 @@ class Pg:
                 col_names = (col_cursor.fetchall())
                 for tup in col_names:
                     columns += [tup[0]]
-                self.conn.commit()
+                # self.conn.commit()
                 self.conn.close()
                 return columns
         except Exception as e:
+            print("get_columns_names ERROR*************:", str(e))
             self.conn.rollback()
             self.conn.close()
             
@@ -97,6 +98,12 @@ class Pg:
     def get_values_from_column(self, column, table, schema, distinct=True):
         values = []
         try:
+            self.conn = connect(
+                dbname=self.dbname,
+                user=self.user,
+                host=self.host,
+                password=self.password
+            )
             with self.conn.cursor() as col_cursor:
                 if distinct:
                     all_values_str = '''SELECT DISTINCT "{0}" FROM "{2}"."{1}" ORDER BY "{0}";'''.format(
@@ -252,6 +259,12 @@ class Pg:
     # get vuln connection
     def get_vuln_connection(self, schema, table, column1, column2):
         try:
+            self.conn = connect(
+                dbname=self.dbname,
+                user=self.user,
+                host=self.host,
+                password=self.password
+            )
             with self.conn.cursor(cursor_factory=RealDictCursor) as cursor:
                 sql = '''SELECT DISTINCT "{}", "{}" FROM "{}"."{}";'''.format(
                     column1, column2, schema, table)
