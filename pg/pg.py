@@ -56,15 +56,15 @@ class Pg:
                 col_names_str += "table_name = '{}';".format(table)
                 sql_object = sql.SQL(col_names_str).format(
                     sql.Identifier(table))
-                try:
-                    col_cursor.execute(sql_object)
-                    col_names = (col_cursor.fetchall())
-                    for tup in col_names:
-                        columns += [tup[0]]
-
-                except Exception as err:
-                    self.conn.rollback()
-                    return ("get_columns_names ERROR:", err)
+                # try:
+                col_cursor.execute(sql_object)
+                col_names = (col_cursor.fetchall())
+                for tup in col_names:
+                    columns += [tup[0]]
+                self.conn.commit()
+                # except Exception as err:
+                #     self.conn.rollback()
+                #     return ("get_columns_names ERROR:", err)
 
         except Exception as e:
             self.conn.rollback()
@@ -84,15 +84,15 @@ class Pg:
 
                 sql_object = sql.SQL(col_names_str).format(
                     sql.Identifier(table))
-                try:
-                    col_cursor.execute(sql_object)
-                    col_names = col_cursor.fetchall()
-                    for tup in col_names:
-                        columns += [tup[0]]
-
-                except Exception as err:
-                    self.conn.rollback()
-                    return ("get_numeric_column_names ERROR:", err)
+                # try:
+                col_cursor.execute(sql_object)
+                col_names = col_cursor.fetchall()
+                for tup in col_names:
+                    columns += [tup[0]]
+                self.conn.commit()
+                # except Exception as err:
+                #     self.conn.rollback()
+                #     return ("get_numeric_column_names ERROR:", err)
 
         except Exception as e:
             self.conn.rollback()
@@ -115,15 +115,17 @@ class Pg:
                 sql_object = sql.SQL(all_values_str).format(
                     sql.Identifier(column), sql.Identifier(table))
 
-                try:
-                    col_cursor.execute(sql_object, (column))
-                    values_name = (col_cursor.fetchall())
-                    for tup in values_name:
-                        values += [tup[0]]
+                # try:
+                col_cursor.execute(sql_object, (column))
+                values_name = (col_cursor.fetchall())
+                for tup in values_name:
+                    values += [tup[0]]
+                self.conn.commit()
+                        
 
-                except Exception as err:
-                    self.conn.rollback()
-                    return ("get_values_from_column ERROR:", err)
+                # except Exception as err:
+                #     self.conn.rollback()
+                #     return ("get_values_from_column ERROR:", err)
 
         except Exception as e:
             self.conn.rollback()
