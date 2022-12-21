@@ -62,12 +62,16 @@ class Pg:
                 for tup in col_names:
                     columns += [tup[0]]
                 self.conn.commit()
+                self.conn.close()
+                
                 # except Exception as err:
                 #     self.conn.rollback()
                 #     return ("get_columns_names ERROR:", err)
 
         except Exception as e:
             self.conn.rollback()
+            self.conn.close()
+            
             return ("get_columns_names ERROR:", e)
 
         return columns
@@ -157,9 +161,12 @@ class Pg:
                     table, column, col_datatype, schema)
                 self.execute_sql(cursor, sql)
                 self.conn.commit()
+                self.conn.close()
+                
                 return ('create column successful')
         except Exception as e:
             self.conn.rollback()
+            self.conn.close()
             return ("create_column ERROR:", e)
 
     # update column
@@ -267,8 +274,11 @@ class Pg:
                 cursor.execute(sql)
                 rows = cursor.fetchall()
                 data = json.dumps(rows, default=json_util.default)
+                self.conn.commit()
+                self.conn.close()
                 return data
 
         except Exception as e:
             self.conn.rollback()
+            self.conn.close()
             return ("get_all_values ERROR:", e)
