@@ -137,7 +137,8 @@ class Pg:
         except Exception as e:
             conn.rollback()
             conn.close()
-            return ("get_numeric_column_names ERROR:", e)
+            return {"error":str(e)}
+            # return ("get_numeric_column_names ERROR:", e)
 
     # create the schema based on the given name
     def create_schema(self, name):
