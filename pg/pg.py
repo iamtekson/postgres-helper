@@ -197,6 +197,24 @@ class Pg:
             conn.rollback()
             conn.close()
             return ("update_column ERROR:", e)
+        
+    # delete column in table
+    def delete_column(self, column, table, schema='public',  col_datatype='varchar'):
+        try:
+            conn=self.connect_db()
+            if conn==None:
+                return ("Error in database connection")
+            with conn.cursor() as cursor:
+                sql = '''ALTER TABLE "{3}"."{0}" DELETE IF EXISTS "{1}" {2}'''.format(
+                    table, column, col_datatype, schema)
+                self.execute_sql(cursor, sql)
+                conn.commit()
+                conn.close()
+                return ({"detail":'delete column successful'})
+        except Exception as e:
+            conn.rollback()
+            conn.close()
+            return ({'error':str(e)})
 
     # run own sql
     def run_sql(self, sql):
