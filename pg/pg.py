@@ -321,7 +321,8 @@ class Pg:
             with conn.cursor(cursor_factory=RealDictCursor) as cursor:
                 sql = '''SELECT DISTINCT "{}", "{}" FROM "{}"."{}";'''.format(
                     column1, column2, schema, table)
-                cursor.execute(sql)
+                vul_exec=cursor.execute(sql)
+                print(vul_exec,"vul_execvul_execvul_execvul_execvul_execvul_exec")
                 rows = cursor.fetchall()
                 data = json.dumps(rows, default=json_util.default)
                 conn.close()
@@ -330,3 +331,25 @@ class Pg:
             conn.rollback()
             conn.close()
             return ("get_all_values ERROR:", e)
+        
+    # get vuln connection
+    def clone_table(self, from_schema, to_schema, from_table, to_table):
+        try:
+            conn=self.connect_db()
+            if conn==None:
+                return ("Error in database connection")
+            with conn.cursor() as cursor:
+                # CREATE TABLE schema2.mytable AS SELECT * FROM schema1.mytable WHERE 1=2;
+                sql1 = '''CREATE TABLE "{}"."{}" AS SELECT * FROM "{}"."{}" WHERE 1=2;'''.format(
+                    to_schema, to_table, from_schema, from_table)
+                cursor.execute(sql1)
+                sql2 = '''INSERT INTO "{}"."{}" SELECT * FROM "{}"."{}";'''.format(
+                    to_schema, to_table, from_schema, from_table)
+                cursor.execute(sql2)
+                conn.commit()
+                conn.close()
+                return "table cloned successfully"
+        except Exception as e:
+            conn.rollback()
+            conn.close()
+            return ("clone table ERROR:", e)
