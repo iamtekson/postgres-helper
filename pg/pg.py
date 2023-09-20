@@ -159,6 +159,23 @@ class Pg:
             conn.rollback()
             conn.close()
             return ("create_schema ERROR:", e)
+        
+    # delete the schema based on the given name
+    def delete_schema(self, name):
+        try:
+            conn=self.connect_db()
+            if conn==None:
+                return (False,"Error in database connection")
+            with conn.cursor() as cursor:
+                sql = f'''DROP SCHEMA IF EXISTS {name} CASCADE'''
+                self.execute_sql(cursor, sql)
+                conn.commit()
+                conn.close()
+                return (True,'Schema deleted successfully')
+        except Exception as e:
+            conn.rollback()
+            conn.close()
+            return (False,str(e))
 
     # create new column in table
     def create_column(self, column, table, schema='public',  col_datatype='varchar'):
