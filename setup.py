@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="postgres-helper",
-    version="0.0.5",
+    version="0.0.6",
     author="Tek Kshetri",
     author_email="iamtekson@gmail.com",
     description="Package for Postgres query on python",
